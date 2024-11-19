@@ -1,87 +1,126 @@
-# Delivery Route Optimizer
+# Delivery Route Optimizer Discord Bot
 
-This project is a **Delivery Route Optimizer** application built using **Bottle** for backend services and **Streamlit** for an interactive web-based frontend. The application calculates an optimized delivery route using the Google Maps API and provides profitability information based on a specific cost model.
+A Discord bot that optimizes delivery routes by handling both image uploads and text inputs for addresses. It utilizes OCR to extract addresses from images, validates them using the Google Geocoding API, and calculates the most efficient delivery route. Additionally, it assesses profitability based on distance, time, and tip amounts.
 
 ## Features
 
-- Geocodes delivery addresses using Google Maps API.
-- Calculates an optimized route that returns to a central location.
-- Computes total distance, duration, and profitability for delivery routes.
-- Allows users to input multiple delivery addresses and corresponding tip amounts.
-- Includes a basic cost model tailored for a **2021 Toyota Camry**.
+- **Dual Input Handling:** Supports both image uploads and direct text inputs for delivery addresses.
+- **OCR Integration:** Extracts text from images using Tesseract OCR.
+- **Address Validation:** Geocodes addresses via Google Maps Geocoding API.
+- **Route Optimization:** Determines the most efficient route using Google Maps Directions API.
+- **Profitability Calculation:** Evaluates if the delivery route is profitable based on various factors.
 
-## Cost Model
+## Prerequisites
 
-The profitability model is designed around the following parameters:
+- **Python 3.8+**
+- **Tesseract OCR:** Installed and added to your system `PATH`.
+  - [Installation Guide](https://github.com/tesseract-ocr/tesseract#installing-tesseract)
+- **Google Maps API Key:** Enabled for Geocoding and Directions APIs.
+- **Discord Bot Token:** Created via the [Discord Developer Portal](https://discord.com/developers/applications).
 
-- **Delivery Vehicle**: 2021 Toyota Camry
-- **Compensation Per Delivery**: $2.00
-- **Gas Mileage**: 32 miles per gallon
-- **Gas Price**: $2.85 per gallon
-- **Wear and Tear Cost**: $0.05 per mile
-- **Driver's On-Road Time Cost**: $4.00 per hour (representing opportunity cost for drivers)
-- **Tip Input**: User-defined for each delivery address
+## Installation
 
-## Getting Started
+1. **Clone the Repository:**
+    ```bash
+    git clone https://github.com/yourusername/delivery-route-optimizer.git
+    cd delivery-route-optimizer
+    ```
 
-### Prerequisites
+2. **Set Up Virtual Environment (Optional but Recommended):**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # On Unix or MacOS
+    venv\Scripts\activate     # On Windows
+    ```
 
-Before running the project, you will need to install the following Python packages:
+3. **Install Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+    *If `requirements.txt` is not available:*
+    ```bash
+    pip install discord.py pytesseract Pillow googlemaps python-dotenv
+    ```
 
-```bash
-pip install bottle streamlit requests
-```
+4. **Configure Environment Variables:**
+    - Create a `.env` file in the project root:
+        ```
+        DISCORD_BOT_TOKEN=your_discord_bot_token
+        GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+        CENTRAL_LOCATION=your_central_location_address
+        ```
+    - Ensure `.env` is added to `.gitignore` to keep credentials secure.
 
-Setting Up
-Google Maps API Key: You will need to obtain a Google Maps API Key from the Google Cloud Platform. After generating your key, update it in both script files:
+## Usage
 
-```python
-API_KEY = 'YOUR_API_KEY_HERE'
-```
-Central Location: Set your central location in both script files. This is the address from where your deliveries start and end:
+1. **Run the Bot:**
+    ```bash
+    python delivery_bot.py
+    ```
+    - **Expected Output:**
+        ```
+        Logged in as Delivery Bot - 123456789012345678
+        ```
 
-```python
-CENTRAL_LOCATION = "YOUR_CENTRAL_LOCATION"
-```
-Run the Bottle Backend Server:
+2. **Interact via Discord:**
+    - **Command:** `!go`
+      - **With Image:**
+        ```
+        !go
+        [Attach Image Containing Addresses]
+        ```
+        - The bot processes the image, extracts addresses, prompts for tips, and returns the optimized route with profitability.
+      - **Without Image:**
+        ```
+        !go
+        ```
+        - The bot prompts you to enter addresses line by line, then proceeds similarly.
 
-```bash
-python distance.py
-```
-This will start the server on localhost:8080.
+## Functionality Overview
 
-Run the Streamlit Frontend:
+- **OCR Processing (`perform_ocr`):** Extracts text from uploaded images using Tesseract OCR.
+- **Address Extraction (`extract_addresses`):** Uses regex to parse valid addresses from extracted text.
+- **Validation (`validate_addresses`):** Geocodes addresses to obtain latitude and longitude.
+- **Route Optimization (`get_optimized_route`):** Utilizes Google Maps Directions API to compute the most efficient route.
+- **Profitability Calculation (`calculate_profitability_camry`):** Determines profitability based on distance, time, and tips.
 
-```bash
-streamlit run address_selector.py
-```
-This will open an interactive UI in your web browser, where you can enter delivery addresses and calculate the optimized route.
+## Troubleshooting
 
-## How to Use
-Enter Delivery Addresses: In the UI, specify the number of delivery addresses and input each address in the respective fields.
-Enter Tips: Enter the tip amount for each address.
-Optimize Route: Click the "Optimize Route" button to calculate the route, total distance, duration, and profitability.
-## Profitability Calculation
-The profitability calculation considers the following factors:
+- **Tesseract Not Found:**
+  - Ensure Tesseract OCR is installed and the path is correctly set in the script.
+- **Invalid Addresses:**
+  - Verify that addresses are in the correct format and within the supported cities.
+- **Google Maps API Issues:**
+  - Check API key validity and ensure necessary APIs are enabled.
+- **Bot Unresponsive:**
+  - Confirm that the bot is running without errors and that the Discord token is correct.
 
-Gasoline Cost: Based on the total distance and gas price.
-Wear and Tear Cost: Based on the total distance at $0.05 per mile.
-Time Cost: Based on the time taken and an hourly opportunity cost of $4.00.
-Earnings: Flat $2.00 delivery compensation plus tips per address.
+## Contributing
 
-## Example API Request (For Advanced Users)
-To test the API directly, you can use a cURL command:
+Contributions are welcome! Follow these steps:
 
-```bash
-curl -X POST http://localhost:8080/optimize_route \
-    -H "Content-Type: application/json" \
-    -d '{"central_location": "YOUR_CENTRAL_LOCATION", "delivery_addresses": ["123 Main St, City, State", "456 Oak St, City, State"], "tip_amounts": [5, 3]}'
-```
-## Notes
-The code has built-in error handling for invalid addresses that cannot be geocoded.
-Ensure that all inputs are correctly formatted and that the API key and central location are properly set.
-The app assumes that the delivery route always starts and ends at the central location.
+1. **Fork the Repository**
+2. **Create a Feature Branch:**
+    ```bash
+    git checkout -b feature/YourFeatureName
+    ```
+3. **Commit Your Changes:**
+    ```bash
+    git commit -m "Add Your Feature"
+    ```
+4. **Push to the Branch:**
+    ```bash
+    git push origin feature/YourFeatureName
+    ```
+5. **Open a Pull Request**
+
+## License
+
+MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
-Google Maps Platform for providing the geocoding and directions API services.
-Streamlit and Bottle for enabling a straightforward and interactive web application setup.
+
+- [discord.py](https://discordpy.readthedocs.io/) - Discord API wrapper for Python.
+- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) - Open-source OCR engine.
+- [Google Maps APIs](https://developers.google.com/maps) - Geocoding and Directions APIs.
+- [Python-dotenv](https://github.com/theskumar/python-dotenv) - Loads environment variables from `.env` file.
